@@ -3,6 +3,18 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 
+// import * as api from './api'
+// Vue.prototype.$ajax = api
+
+import axios from 'axios'
+
+Vue.prototype.$ajax = axios
+
+import qs from 'qs'
+Vue.prototype.qs = qs  
+
+
+
 Vue.config.productionTip = false
 
 new Vue({

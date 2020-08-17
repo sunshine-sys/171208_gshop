@@ -1,38 +1,74 @@
-// ajax请求函数模块
-// 返回值：promise对象 （异步返回的数据是：response.data）
 import axios from 'axios'
-export default function ajax(url,data={},type='GET'){
 
-    return new Promise(function (resolve,reject){
-        // 执行异步ajax请求
-        let promise
-    if(type==='GET'){
-        // 准备url query参数数据
-        let dataStr='' //数据拼接字符串
-        Object.keys(data).forEach(key=>{
-            dataStr +=key +'='+ data[key]+'&'
-        })
-        if(dataStr!==''){
-            dataStr=dataStr.substring(0,dataStr.lastIndexOf('&'))
-            url=url+'?'+dataStr
+
+export default (type, url, params, isresponse, isError) => {
+    var serialize = function(obj) {
+        var str = "";
+        if (obj == null || obj == undefined) {
+            return str
         }
-        // 发送get请求
-        promise=axios.get(url)
-    }else{
-        // 发送post请求  
-        promise =axios.post(url,data)
+
+        Object.keys(obj).forEach(function(key) {
+            str += `${key}=${obj[key]}&`;
+        });
+
+        return str.trimRight('&');
     }
-    promise.then(function(response){
-        // 成功了调用resolve()
-        resolve(response.data)
+    
+    // 这里就是设置请求头的地方
+    axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+    // axios.defaults.headers.common['timestamp'] = timestamp;
+    axios.defaults.headers.common['ua'] = '5'; //客户端来源 发胜说先随便填一个 cookieGet("ua")
+    axios.defaults.headers.common['source'] = '8';
+    // axios.defaults.headers.common['sn'] = guid();
 
-    }).catch(function(error){
-         // 失败了调用rejiect
-        reject(error)
-            })   
+    return new Promise((resolve, reject) => {
+        switch (type) {
+            case 'post':
+                params = serialize(params)
+                axios.post(url, params, isresponse).then(response => {
+                    if (isresponse) {
+                        resolve(response); //需要返回全部 不然获取不到头部的分页数据类似情况
+                    } else {
+                        resolve(response.data);
+                    }
+                }).catch((error) => {
+                    reject(error);
+                    console.log("post--", error);
+                })
+                break;
+            case 'postJson':
+                axios.post(url, params, isresponse).then(response => {
+
+                    if (isresponse) {
+                        resolve(response); //需要返回全部 不然获取不到头部的分页数据类似情况
+                    } else {
+                        resolve(response.data);
+                    }
+
+                }).catch((error) => {
+                    reject(error);
+                    console.log("post--", error);
+                })
+                break;
+
+            case 'get':
+                axios.get(url, {
+                    params
+                }, isresponse).then(response => {
+
+                    if (isresponse) {
+                        resolve(response); //需要返回全部 不然获取不到头部的分页数据类似情况
+                    } else {
+                        resolve(response.data);
+                    }
+
+                }).catch((error) => {
+                    reject(error);
+                    console.log("get--", error);
+                })
+                break;
+        }
+
     })
-}  
-// const response =await ajax()
-// const result=response.data
-
-// const resule=await ajax()
+}

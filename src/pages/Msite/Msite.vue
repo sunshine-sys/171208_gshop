@@ -1,7 +1,7 @@
 <template>
   <section class="msite">
     <!--首页头部-->
-    <HeaderTop title="昌平区北七家宏福科技园(337省道北)">
+    <HeaderTop :title="'谷歌'">
       <span class="header_search" slot="left">
         <i class="iconfont icon-sousuo"></i>
       </span>
@@ -11,60 +11,25 @@
     </HeaderTop>
     <!--首页导航-->
     <nav class="msite_nav">
-      <div class="swiper-container">
+      <div class="swiper-container" v-if="bannerArr.length">
         <div class="swiper-wrapper">
-          <div class="swiper-slide">
-            <a href="javascript:" class="link_to_food">
+          <div class="swiper-slide" v-for="(items,index) in bannerArr" :key="index">
+            <a
+              href="javascript:"
+              class="link_to_food"
+              v-for="(item,index) in items.one"
+              :key="index"
+            >
               <div class="food_container">
-                <img src="./images/nav/9.jpg" />
+                <img :src="item.image" />
               </div>
-              <span>甜品饮品</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/10.jpg" />
-              </div>
-              <span>商超便利</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/11.jpg" />
-              </div>
-              <span>美食</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/12.jpg" />
-              </div>
-              <span>简餐</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/13.jpg" />
-              </div>
-              <span>新店特惠</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/14.jpg" />
-              </div>
-              <span>准时达</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/1.jpg" />
-              </div>
-              <span>预订早餐</span>
-            </a>
-            <a href="javascript:" class="link_to_food">
-              <div class="food_container">
-                <img src="./images/nav/2.jpg" />
-              </div>
-              <span>土豪推荐</span>
+              <span>{{item.title}}</span>
             </a>
           </div>
         </div>
-        <div class="swiper-slide">
+      </div>
+       <img src="./images/msite_back.svg" alt="back" v-else>
+      <!-- <div class="swiper-slide">
           <a href="javascript:" class="link_to_food">
             <div class="food_container">
               <img src="./images/nav/9.jpg" />
@@ -113,10 +78,9 @@
             </div>
             <span>土豪推荐</span>
           </a>
-        </div>
-        <!-- Add Pagination -->
-        <div class="swiper-pagination"></div>
-      </div>
+      </div>-->
+      <!-- Add Pagination -->
+      <div class="swiper-pagination"></div>
     </nav>
     <!--首页附近商家-->
     <div class="msite_shop_list">
@@ -124,7 +88,7 @@
         <i class="iconfont icon-xuanxiang"></i>
         <span class="shop_header_title">附近商家</span>
       </div>
-      <shop-list></shop-list>
+      <shop-list :list="getHomePageContentArr"></shop-list>
     </div>
   </section>
 </template>
@@ -133,9 +97,21 @@
 import HeaderTop from "../../components/HeaderTop/HeaderTop.vue";
 import Swiper from "swiper";
 import "swiper/swiper-bundle.min.css";
-import ShopList from '../../components/ShopList/ShopList.vue'
+import ShopList from "../../components/ShopList/ShopList.vue";
 // import Swiper from '../../../static/css/swiper.css'
+// import { reqFoodCategorys } from "../../api";
 export default {
+  data() {
+    return {
+      bannerArr: [],
+      getHomePageContentArr: [],
+
+      fromData: {
+        pageSize: 10,
+        pangeIndex: 1,
+      },
+    };
+  },
   mounted() {
     // 创建一个swiper实例对象，来实现轮播
     new Swiper(".swiper-container", {
@@ -145,10 +121,55 @@ export default {
         el: ".swiper-pagination",
       },
     });
+
+    this.getBanner();
+    this.getHomePageContent();
+  },
+
+  // created() {
+  //   reqFoodCategorys().then((res) => {
+  //     if (res.data.code == 0) {
+  //       this.getHomePageContentArr = res.data.data.category;
+  //     }
+  //   })
+  // },
+
+  methods: {
+    // getHomePageContent 列表接口名
+    getHomePageContent() {
+       this.$ajax.get("/api/getHomePageContent",{
+         params: this.fromData,
+         headers: {
+            //请求头
+            "Cache-Control": "no-cache",
+          },
+       })
+        .then((res) => {
+          if (res.data.code == 0) {
+            this.getHomePageContentArr = res.data.data.category;
+          }
+        })
+    },
+    // 请求轮播图数据
+    getBanner() {
+      this.$ajax
+        .get("/api/getBanner", {
+          headers: {
+            //请求头
+            "Cache-Control": "no-cache",
+          },
+        })
+        .then((res) => {
+          if (res.data.code == 0) {
+            this.bannerArr = res.data.data.banner;
+          }
+          // console.log('获取的数据：',this.bannerArr)
+        })
+    },
   },
   components: {
     HeaderTop,
-    ShopList
+    ShopList,
   },
 };
 </script>
